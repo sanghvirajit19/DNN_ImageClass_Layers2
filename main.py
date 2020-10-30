@@ -200,7 +200,7 @@ if __name__ == '__main__':
     X_train = X_train_flatten / 255
     X_test = X_test_flatten / 255
 
-    model = NeuralNetwork(X_train, y_train, X_test, y_test, epochs=10000, learning_rate=0.01)
+    model = NeuralNetwork(X_train, y_train, X_test, y_test, epochs=15000, learning_rate=0.01)
     model.fit()
 
     y_predicted = model.predict(X_test, threshold=0.3)
