@@ -130,18 +130,12 @@ class NeuralNetwork:
 
     def predict(self, x, threshold):
 
-        m = x.shape[1]
-        y_predicted = np.zeros((1, m))
-
         probablity = sigmoid(np.dot(self.w2.T, relu(np.dot(self.w1.T, x))))
 
-        for i in range(probablity.shape[1]):
-            if probablity[0, i] >= threshold:
-                y_predicted[:, i] = 1
-            else:
-                y_predicted[:, i] = 0
+        probablity[probablity <= threshold] = 0
+        probablity[probablity > threshold] = 1
 
-        y_predicted = y_predicted.astype(int)
+        y_predicted = probablity.astype(int)
 
         return y_predicted
 
@@ -206,7 +200,7 @@ if __name__ == '__main__':
     X_train = X_train_flatten / 255
     X_test = X_test_flatten / 255
 
-    model = NeuralNetwork(X_train, y_train, X_test, y_test, epochs=10000, learning_rate=0.01)
+    model = NeuralNetwork(X_train, y_train, X_test, y_test, epochs=2000, learning_rate=0.01)
     model.fit()
 
     y_predicted = model.predict(X_test, threshold=0.3)
