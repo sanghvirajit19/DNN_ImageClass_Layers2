@@ -49,7 +49,7 @@ class NeuralNetwork:
 
     def bias_init(self):
 
-        self.b = 1.0
+        self.b = 0.1
         self.b1 = np.random.randn(10, 1) * np.sqrt(2.0 / self.input.shape[0])
         self.b2 = np.random.randn(1, 1) * np.sqrt(2.0 / self.input.shape[0])
 
@@ -78,10 +78,10 @@ class NeuralNetwork:
         dw1 = np.dot(cost_derivative(self.m, self.y, self.output) * sigmoid_derivative(self.z2) * np.dot(
                                          self.w2.T, relu_derivative(self.z1)), self.input.T).T
 
-        db2 = cost_derivative(self.m, self.y, self.output) * sigmoid_derivative(self.z2)
+        db2 = np.sum(cost_derivative(self.m, self.y, self.output) * sigmoid_derivative(self.z2))
 
-        db1 = cost_derivative(self.m, self.y, self.output) * sigmoid_derivative(self.z2) * np.dot(
-                                         self.w2.T, relu_derivative(self.z1))
+        db1 = np.sum(cost_derivative(self.m, self.y, self.output) * sigmoid_derivative(self.z2) * np.dot(
+                                         self.w2.T, relu_derivative(self.z1)))
 
         self.w2 = self.w2 - self.learning_rate * dw2
         self.w1 = self.w1 - self.learning_rate * dw1
@@ -130,7 +130,7 @@ class NeuralNetwork:
 
     def predict(self, x, threshold):
 
-        probablity = sigmoid(np.dot(self.w2.T, relu(np.dot(self.w1.T, x))))
+        probablity = sigmoid(np.dot(self.w2.T, relu(np.dot(self.w1.T, x) + self.b * self.b1)) + self.b * self.b2)
 
         probablity[probablity <= threshold] = 0
         probablity[probablity > threshold] = 1
@@ -200,7 +200,7 @@ if __name__ == '__main__':
     X_train = X_train_flatten / 255
     X_test = X_test_flatten / 255
 
-    model = NeuralNetwork(X_train, y_train, X_test, y_test, epochs=15000, learning_rate=0.01)
+    model = NeuralNetwork(X_train, y_train, X_test, y_test, epochs=5000, learning_rate=0.01)
     model.fit()
 
     y_predicted = model.predict(X_test, threshold=0.3)
