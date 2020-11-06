@@ -43,14 +43,13 @@ class NeuralNetwork:
         self.epochs_list = []
 
     def weight_init(self):
-        self.w1 = np.random.randn(self.input.shape[0], 10) * np.sqrt(2.0 / self.input.shape[0])
-        self.w2 = np.random.randn(10, 1) * np.sqrt(2.0 / self.input.shape[0])
+        self.w1 = np.random.randn(self.input.shape[0], 4) * np.sqrt(2.0 / self.input.shape[0])
+        self.w2 = np.random.randn(4, 1) * np.sqrt(2.0 / self.input.shape[0])
         return self.w1, self.w2
 
     def bias_init(self):
 
-        self.b = 0.1
-        self.b1 = np.random.randn(10, 1) * np.sqrt(2.0 / self.input.shape[0])
+        self.b1 = np.random.randn(4, 1) * np.sqrt(2.0 / self.input.shape[0])
         self.b2 = np.random.randn(1, 1) * np.sqrt(2.0 / self.input.shape[0])
 
         return self.b1, self.b2
@@ -61,10 +60,10 @@ class NeuralNetwork:
             self.w1, self.w2 = self.weight_init()
             self.b1, self.b2 = self.bias_init()
 
-        self.z1 = np.dot(self.w1.T, self.input) + self.b * self.b1
-        self.a1 = relu(self.z1)
+        self.z1 = np.dot(self.w1.T, self.input) + self.b1
+        self.a1 = sigmoid(self.z1)
 
-        self.z2 = np.dot(self.w2.T, self.a1) + self.b * self.b2
+        self.z2 = np.dot(self.w2.T, self.a1) + self.b2
         self.output = sigmoid(self.z2)
 
         self.cost = cost(self.m, self.y, self.output)
@@ -73,15 +72,16 @@ class NeuralNetwork:
 
     def backpropogation(self):
 
+
         dw2 = np.dot((cost_derivative(self.m, self.y, self.output) * sigmoid_derivative(self.z2)), self.a1.T).T
 
-        dw1 = np.dot(cost_derivative(self.m, self.y, self.output) * sigmoid_derivative(self.z2) * np.dot(
-                                         self.w2.T, relu_derivative(self.z1)), self.input.T).T
+        dw1 = (1 / self.m) * np.dot(np.dot(self.w2.T.T, cost_derivative(self.m, self.y, self.output) *
+                                           sigmoid_derivative(self.z2)) * sigmoid_derivative(self.z1),
+                                                self.input.T).T
 
         db2 = np.sum(cost_derivative(self.m, self.y, self.output) * sigmoid_derivative(self.z2))
-
         db1 = np.sum(cost_derivative(self.m, self.y, self.output) * sigmoid_derivative(self.z2) * np.dot(
-                                         self.w2.T, relu_derivative(self.z1)))
+                                         self.w2.T, sigmoid_derivative(self.z1)))
 
         self.w2 = self.w2 - self.learning_rate * dw2
         self.w1 = self.w1 - self.learning_rate * dw1
@@ -102,8 +102,8 @@ class NeuralNetwork:
 
             self.layer1, self.output, self.cost, self.w1, self.w2, self.b1, self.b2 = self.propogation(i)
 
-            print('epochs:' + str(i) + " "
-                  "Loss:" + str(self.cost) + " "
+            print('epochs:' + str(i) + " | "
+                  "Loss:" + str(self.cost) + " | "
                   "accuracy: {} %".format(100 - np.mean(np.abs(self.output - self.y)) * 100))
 
             if i % 100 == 0:
@@ -130,7 +130,7 @@ class NeuralNetwork:
 
     def predict(self, x, threshold):
 
-        probablity = sigmoid(np.dot(self.w2.T, relu(np.dot(self.w1.T, x) + self.b * self.b1)) + self.b * self.b2)
+        probablity = sigmoid(np.dot(self.w2.T, sigmoid(np.dot(self.w1.T, x) + self.b1)) + self.b2)
 
         probablity[probablity <= threshold] = 0
         probablity[probablity > threshold] = 1
@@ -200,7 +200,7 @@ if __name__ == '__main__':
     X_train = X_train_flatten / 255
     X_test = X_test_flatten / 255
 
-    model = NeuralNetwork(X_train, y_train, X_test, y_test, epochs=5000, learning_rate=0.01)
+    model = NeuralNetwork(X_train, y_train, X_test, y_test, epochs=15000, learning_rate=0.1)
     model.fit()
 
     y_predicted = model.predict(X_test, threshold=0.3)
